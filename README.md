@@ -1,7 +1,16 @@
-# lukina-telegram-bot
+# Мини-банк lukina-telegram-bot
 
 Мини-банк.Представляет телеграм-бот, который предоставляет список возможных команд для операций со счетами.
 Возвращает результат в текстовом виде.
+
+## Quick start
+
+1. В файле [application.yml](src/main/resources/application.yml) использовать свои имя бота и токен
+2. Запустить скрипт
+```bash
+./gradlew build
+./gradlew bootRun
+```
 
 ## Архитектура
 ### Frontend (java/kotlin)
