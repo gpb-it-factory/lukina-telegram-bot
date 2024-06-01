@@ -1,6 +1,7 @@
 package ru.gazprombank.app.bot;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,13 @@ public class TelegramBot extends TelegramLongPollingBot {
     private String token;
     private MessageHandler messageHandler;
 
-    public TelegramBot(@Value("${bot.name}") String botName, @Value("${bot.token}") String token) {
+    private UserClient userClient;
+
+    @Autowired
+    public TelegramBot(@Value("${bot.name}") String botName, @Value("${bot.token}") String token, UserClient userClient) {
         super();
-        this.messageHandler = new MessageHandler();
+        this.userClient = userClient;
+        this.messageHandler = new MessageHandler(this.userClient);
         this.botName = botName;
         this.token = token;
     }
