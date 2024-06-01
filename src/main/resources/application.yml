@@ -1,3 +1,5 @@
 spring.application.name: lukina-telegram-bot
 bot.name: BOT-NAME
 bot.token: BOT-TOKEN
+server:
+  port: 8081
