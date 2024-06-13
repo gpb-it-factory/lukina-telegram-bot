@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation "org.telegram:telegrambots-spring-boot-starter:${telegramStarter}"
+    implementation 'org.json:json:20210307'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
