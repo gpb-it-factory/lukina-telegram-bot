@@ -9,6 +9,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Objects;
+
 @Slf4j
 @Component
 public class UserClient {
@@ -37,20 +39,15 @@ public class UserClient {
             ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
             String responseBody = responseEntity.getBody();
 
+            if (Objects.equals(responseBody, "OK")) {
+                return REGISTER_SUCCESS_MESSAGE;
+            }
+
             try {
-                RegisterUserResponseBody registerUserResponseBody = objectMapper.readValue(responseBody, RegisterUserResponseBody.class);
-                if (registerUserResponseBody.userId != null) {
-                    return REGISTER_SUCCESS_MESSAGE;
-                } else {
-                    return DEFAULT_ERROR_MESSAGE;
-                }
-            } catch (Exception success_exception) {
-                try {
-                    ErrorResponseBody errorResponseBody = objectMapper.readValue(responseBody, ErrorResponseBody.class);
-                    return errorResponseBody.error;
-                } catch (Exception error_exception) {
-                    return DEFAULT_ERROR_MESSAGE;
-                }
+                ErrorResponseBody errorResponseBody = objectMapper.readValue(responseBody, ErrorResponseBody.class);
+                return errorResponseBody.error;
+            } catch (Exception error_exception) {
+                return DEFAULT_ERROR_MESSAGE;
             }
         } catch (Exception e) {
             return DEFAULT_ERROR_MESSAGE;

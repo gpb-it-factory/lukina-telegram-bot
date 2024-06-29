@@ -26,7 +26,7 @@ public class UserClientTest {
     @Test
     public void testRegisterUser_SuccessfulResponse() {
         MockitoAnnotations.initMocks(this);
-        String successfulResponse = "{ \"userId\": 123 }";
+        String successfulResponse = "OK";
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(successfulResponse, HttpStatus.OK));
 
