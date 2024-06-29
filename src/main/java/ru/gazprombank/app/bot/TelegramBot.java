@@ -3,11 +3,11 @@ package ru.gazprombank.app.bot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Slf4j
@@ -17,13 +17,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     private String token;
     private MessageHandler messageHandler;
 
-    private UserClient userClient;
-
     @Autowired
-    public TelegramBot(@Value("${bot.name}") String botName, @Value("${bot.token}") String token, UserClient userClient) {
+    public TelegramBot(@Value("${bot.name}") String botName, @Value("${bot.token}") String token, UserClient userClient, AccountClient accountClient) {
         super();
-        this.userClient = userClient;
-        this.messageHandler = new MessageHandler(this.userClient);
+        this.messageHandler = new MessageHandler(userClient, accountClient);
         this.botName = botName;
         this.token = token;
     }
@@ -41,11 +38,18 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         String updateMessageText = update.getMessage().getText();
-        log.info("update с сообщением: {}", updateMessageText);
+        User telegramUser = update.getMessage().getFrom();
+        Long telegramUserId = telegramUser.getId();
+        String telegramUserName = telegramUser.getUserName();
+
+        log.info("update от: {}", telegramUserId, "с сообщением: {}", updateMessageText);
+
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(update.getMessage().getChatId());
-        String responseMessageText = this.messageHandler.getResponseMessageText(update.getMessage().getText());
+    sendMessage.setChatId(update.getMessage().getChatId());
+        String responseMessageText = this.messageHandler.getResponseMessageText(telegramUserId, telegramUserName, updateMessageText);
+
         log.info("текст ответа: {}", responseMessageText);
+
         sendMessage.setText(responseMessageText);
         try {
             execute(sendMessage);

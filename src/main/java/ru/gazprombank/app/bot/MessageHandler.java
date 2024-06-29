@@ -7,16 +7,19 @@ import java.util.Optional;
 @Component
 public class MessageHandler {
     private UserClient userClient;
+    private AccountClient accountClient;
     enum MessageType {
         PING,
-        REGISTER
+        REGISTER,
+        CREATE_ACCOUNT
     }
 
-    public MessageHandler(UserClient userClient) {
+    public MessageHandler(UserClient userClient, AccountClient accountClient) {
         this.userClient = userClient;
+        this.accountClient = accountClient;
     }
 
-    public String getResponseMessageText(String message) {
+    public String getResponseMessageText(Long telegramUserId, String telegramUserName, String message) {
         Optional<MessageType> messageTypeOptional = parseMessage(message);
         if (messageTypeOptional.isPresent()) {
             MessageType messageType = messageTypeOptional.get();
@@ -24,7 +27,9 @@ public class MessageHandler {
                 case PING:
                     return "pong";
                 case REGISTER:
-                    return this.userClient.register();
+                    return this.userClient.register(telegramUserId, telegramUserName);
+                case CREATE_ACCOUNT:
+                    return "not implemented yet";
             }
         }
         return "pong";
@@ -37,6 +42,8 @@ public class MessageHandler {
                 return Optional.of(MessageType.PING);
             case "REGISTER":
                 return Optional.of(MessageType.REGISTER);
+            case "CREATEACCOUNT":
+                return Optional.of(MessageType.CREATE_ACCOUNT);
             default:
                 return Optional.empty();
         }
