@@ -23,9 +23,6 @@ public class UserClient {
     }
 
     public String register(Long telegramUserId, String telegramUserName) {
-        String DEFAULT_ERROR_MESSAGE = "В системе произошел сбой и мы не можем Вас зарегистрировать. Попробуйте позже - мы уже занимаемся этой проблемой";
-        String SUCCESS_MESSAGE = "Вы успешно зарегистрированы!";
-
         try {
             String url = this.host + "/users";
 
@@ -39,12 +36,11 @@ public class UserClient {
             HttpEntity<String> request = new HttpEntity(jsonObject.toString(), headers);
             ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
             String responseBody = responseEntity.getBody();
-            System.out.println(responseBody);
 
             try {
                 RegisterUserResponseBody registerUserResponseBody = objectMapper.readValue(responseBody, RegisterUserResponseBody.class);
                 if (registerUserResponseBody.userId != null) {
-                    return SUCCESS_MESSAGE;
+                    return REGISTER_SUCCESS_MESSAGE;
                 } else {
                     return DEFAULT_ERROR_MESSAGE;
                 }
@@ -60,6 +56,9 @@ public class UserClient {
             return DEFAULT_ERROR_MESSAGE;
         }
     }
+
+    public static String REGISTER_SUCCESS_MESSAGE = "Вы успешно зарегистрированы!";
+    public static String DEFAULT_ERROR_MESSAGE = "В системе произошел сбой и мы не можем Вас зарегистрировать. Попробуйте позже - мы уже занимаемся этой проблемой";
 
     private ObjectMapper objectMapper = new ObjectMapper();
     public record RegisterUserResponseBody(Integer userId) {}
