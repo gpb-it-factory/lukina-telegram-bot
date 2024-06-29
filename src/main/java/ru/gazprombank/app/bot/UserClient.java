@@ -1,12 +1,11 @@
 package ru.gazprombank.app.bot;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,19 +23,45 @@ public class UserClient {
     }
 
     public String register(Long telegramUserId, String telegramUserName) {
-        String url = this.host + "/users";
+        String DEFAULT_ERROR_MESSAGE = "В системе произошел сбой и мы не можем Вас зарегистрировать. Попробуйте позже - мы уже занимаемся этой проблемой";
+        String SUCCESS_MESSAGE = "Вы успешно зарегистрированы!";
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("telegram_user_id", telegramUserId);
-        jsonObject.put("telegram_user_name", telegramUserName);
+        try {
+            String url = this.host + "/users";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("telegram_user_id", telegramUserId);
+            jsonObject.put("telegram_user_name", telegramUserName);
 
-        HttpEntity<String> request = new HttpEntity(jsonObject.toString(), headers);
-        String response = restTemplate.postForObject(url, request, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-        System.out.println("Response from register: " + response);
-        return response;
+            HttpEntity<String> request = new HttpEntity(jsonObject.toString(), headers);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+            String responseBody = responseEntity.getBody();
+            System.out.println(responseBody);
+
+            try {
+                RegisterUserResponseBody registerUserResponseBody = objectMapper.readValue(responseBody, RegisterUserResponseBody.class);
+                if (registerUserResponseBody.userId != null) {
+                    return SUCCESS_MESSAGE;
+                } else {
+                    return DEFAULT_ERROR_MESSAGE;
+                }
+            } catch (Exception success_exception) {
+                try {
+                    ErrorResponseBody errorResponseBody = objectMapper.readValue(responseBody, ErrorResponseBody.class);
+                    return errorResponseBody.error;
+                } catch (Exception error_exception) {
+                    return DEFAULT_ERROR_MESSAGE;
+                }
+            }
+        } catch (Exception e) {
+            return DEFAULT_ERROR_MESSAGE;
+        }
     }
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+    public record RegisterUserResponseBody(Integer userId) {}
+    public record ErrorResponseBody(String error) {}
 }
